@@ -60,27 +60,27 @@ def get_bullet_info(metal, magic1, magic2):
     bullet_patterns = {
         ("鉄塊", "蒼氷の結晶", "豪炎の結晶"): {
             "name": "鉄製 蒸気爆弾",
-            "img": "⚙️🔥❄️",
+            "img": "images/steal_fire_ice",
         },
         ("鉄塊", "豪炎の結晶", "雷光の結晶"): {
             "name": "鉄製 爆雷弾",
-            "img": "⚙️🔥⚡",
+            "img": "images/steal_fire_thunder",
         },
         ("鉄塊", "涼風の結晶", "豪炎の結晶"): {
             "name": "鉄製 熱風弾",
-            "img": "⚙️🔥🍃",
+            "img": "images/steal_fire_wind",
         },
         ("鉄塊", "蒼氷の結晶", "雷光の結晶"): {
             "name": "鉄製 凍雷弾",
-            "img": "⚙️❄️⚡",
+            "img": "images/steal_ice_thunder",
         },
         ("鉄塊", "涼風の結晶", "蒼氷の結晶"): {
             "name": "鉄製 吹雪弾",
-            "img": "⚙️❄️🍃",
+            "img": "images/steal_ice_wind",
         },
         ("鉄塊", "涼風の結晶", "雷光の結晶"): {
             "name": "鉄製 嵐弾",
-            "img": "⚙️⚡🍃",
+            "img": "images/steal_thunder_wind",
         },
         ("鋼鉄塊", "蒼氷の結晶", "豪炎の結晶"): {
             "name": "鋼鉄製 蒸気爆弾",
