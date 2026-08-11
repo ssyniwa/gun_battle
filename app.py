@@ -136,11 +136,11 @@ if st.session_state.state in ["craft", "battle"]:
 if st.session_state.state == "start":
     st.markdown("### 【ゲームルール & 戦略ヒント】")
     st.markdown("* **合成フェーズ**: 銃弾ごとに**「貫通力」**や**「継続ダメージ」**の性能が異なります。")
-    st.markdown("* **敵の特性**: 
+    st.markdown("""* **敵の特性**: 
   * 🗿 **高防御力**: 貫通力の高い弾が有効
   * 🌳 **高回復力**: 毎ターンHPを削る「継続ダメージ」弾で相殺
   * 🥷 **高回避率**: 確実に当てるための工夫が必要
-  * 🐗 **高攻撃力**: 短期決戦で素早く倒すべし！")
+  * 🐗 **高攻撃力**: 短期決戦で素早く倒すべし！""")
     if st.button("ゲームスタート", type="primary", use_container_width=True):
         start_game()
         st.rerun()
