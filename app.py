@@ -16,12 +16,13 @@ MAGICS = [
     {"name": "涼風の結晶", "mult": 1.3, "img": "🍃"},
 ]
 
-# 敵リストの定義
+# 敵リストの定義（特性を持たせる）
+# 特性: attack(攻撃力特化), defense(防御力特化), heal(回復力特化), evade(回避率特化)
 ENEMY_TYPES = [
-    {"name": "スライム", "img": "🟢"},
-    {"name": "ゴブリン", "img": "👺"},
-    {"name": "オーク", "img": "🐗"},
-    {"name": "ドラゴン", "img": "🐉"},
+    {"name": "オーク (高攻撃力)", "img": "🐗", "trait": "attack", "atk": 25, "def": 5, "heal": 0, "evade": 0.05},
+    {"name": "ゴーレム (高防御力)", "img": "🗿", "trait": "defense", "atk": 10, "def": 15, "heal": 0, "evade": 0.0},
+    {"name": "トレント (高回復力)", "img": "🌳", "trait": "heal", "atk": 10, "def": 5, "heal": 15, "evade": 0.05},
+    {"name": "ニンジャ (高回避率)", "img": "🥷", "trait": "evade", "atk": 15, "def": 2, "heal": 0, "evade": 0.35},
 ]
 
 # --- セッションステートの初期化 ---
@@ -31,7 +32,7 @@ if "state" not in st.session_state:
     st.session_state.metals = []
     st.session_state.magics = []
     st.session_state.bullets = None
-    st.session_state.enemies = []  # リストから選ばれた複数の敵
+    st.session_state.enemies = []
     st.session_state.enemy_hp = 0
     st.session_state.enemy_max_hp = 0
 
@@ -48,88 +49,34 @@ def generate_materials():
     st.session_state.bullets = None
 
 
-# --- 修正・追加する定義と関数 ---
-
-# 魔力素材の組み合わせ（6通り）を判定して18通りの銃弾情報を返す関数
+# --- 銃弾のステータス（貫通力・継続ダメージ）を割り振る関数 ---
 def get_bullet_info(metal, magic1, magic2):
-    # 魔力2つの名前をソートして順序に依存しないようにする（6通りを網羅）
     sorted_magics = sorted([magic1["name"], magic2["name"]])
     m1_name, m2_name = sorted_magics[0], sorted_magics[1]
 
-    # 18通り（金属3種 × 魔力ペア6種）の固有名称と画像アイコンの定義
+    # デフォルトの特性（貫通力: defenseを無視, 継続ダメージ(DOT): 毎ターンHPを削る）
+    # 金属や魔力の組み合わせによって「貫通」「継続」「会心」などの特殊効果を付与
     bullet_patterns = {
-        ("鉄塊", "蒼氷の結晶", "豪炎の結晶"): {
-            "name": "鉄製 蒸気爆弾",
-            "img": "images/steal_fire_ice.png",
-        },
-        ("鉄塊", "豪炎の結晶", "雷光の結晶"): {
-            "name": "鉄製 爆雷弾",
-            "img": "images/steal_fire_thunder.png",
-        },
-        ("鉄塊", "涼風の結晶", "豪炎の結晶"): {
-            "name": "鉄製 熱風弾",
-            "img": "images/steal_fire_wind.png",
-        },
-        ("鉄塊", "蒼氷の結晶", "雷光の結晶"): {
-            "name": "鉄製 凍雷弾",
-            "img": "images/steal_ice_thunder.png",
-        },
-        ("鉄塊", "涼風の結晶", "蒼氷の結晶"): {
-            "name": "鉄製 吹雪弾",
-            "img": "images/steal_ice_wind.png",
-        },
-        ("鉄塊", "涼風の結晶", "雷光の結晶"): {
-            "name": "鉄製 嵐弾",
-            "img": "images/steal_thunder_wind.png",
-        },
-        ("鋼鉄塊", "蒼氷の結晶", "豪炎の結晶"): {
-            "name": "鋼鉄製 蒸気爆弾",
-            "img": "🔩🔥❄️",
-        },
-        ("鋼鉄塊", "豪炎の結晶", "雷光の結晶"): {
-            "name": "鋼鉄製 爆雷弾",
-            "img": "🔩🔥⚡",
-        },
-        ("鋼鉄塊", "涼風の結晶", "豪炎の結晶"): {
-            "name": "鋼鉄製 熱風弾",
-            "img": "🔩🔥🍃",
-        },
-        ("鋼鉄塊", "蒼氷の結晶", "雷光の結晶"): {
-            "name": "鋼鉄製 凍雷弾",
-            "img": "🔩❄️⚡",
-        },
-        ("鋼鉄塊", "涼風の結晶", "蒼氷の結晶"): {
-            "name": "鋼鉄製 吹雪弾",
-            "img": "🔩❄️🍃",
-        },
-        ("鋼鉄塊", "涼風の結晶", "雷光の結晶"): {
-            "name": "鋼鉄製 嵐弾",
-            "img": "🔩⚡🍃",
-        },
-        ("ミスリル塊", "蒼氷の結晶", "豪炎の結晶"): {
-            "name": "ミスリル製 蒸気爆弾",
-            "img": "✨🔥❄️",
-        },
-        ("ミスリル塊", "豪炎の結晶", "雷光の結晶"): {
-            "name": "ミスリル製 爆雷弾",
-            "img": "✨🔥⚡",
-        },
-        ("ミスリル塊", "涼風の結晶", "豪炎の結晶"): {
-            "name": "ミスリル製 熱風弾",
-            "img": "✨🔥🍃",
-        },
-        ("ミスリル塊", "蒼氷の結晶", "雷光の結晶"): {
-            "name": "ミスリル製 凍雷弾",
-            "img": "✨❄️⚡",
-        },
-        ("ミスリル塊", "涼風の結晶", "蒼氷の結晶"): {
-            "name": "ミスリル製 吹雪弾",
-            "img": "✨❄️🍃",
-        },
-        ("ミスリル塊", "涼風の結晶", "雷光の結晶"): {
-            "name": "ミスリル製 嵐弾",
-            "img": "✨⚡🍃",
-        },
+        ("鉄塊", "蒼氷の結晶", "豪炎の結晶"): {"name": "鉄製 蒸気爆弾", "img": "images/steal_fire_ice.png", "pierce": 5, "dot": 8},
+        ("鉄塊", "豪炎の結晶", "雷光の結晶"): {"name": "鉄製 爆雷弾", "img": "images/steal_fire_thunder", "pierce": 0, "dot": 15},
+        ("鉄塊", "涼風の結晶", "豪炎の結晶"): {"name": "鉄製 熱風弾", "img": "images/steal_fire_wind.png", "pierce": 2, "dot": 10},
+        ("鉄塊", "蒼氷の結晶", "雷光の結晶"): {"name": "鉄製 凍雷弾", "img": "images/steal_ice_thunder.png", "pierce": 8, "dot": 5},
+        ("鉄塊", "涼風の結晶", "蒼氷の結晶"): {"name": "鉄製 吹雪弾", "img": "images/steal_ice_wind.png", "pierce": 3, "dot": 5},
+        ("鉄塊", "涼風の結晶", "雷光の結晶"): {"name": "鉄製 嵐弾", "img": "images/steal_thunder_wind.png", "pierce": 0, "dot": 12},
+        
+        ("鋼鉄塊", "蒼氷の結晶", "豪炎の結晶"): {"name": "鋼鉄製 蒸気爆弾", "img": "🔩🔥❄️", "pierce": 10, "dot": 10},
+        ("鋼鉄塊", "豪炎の結晶", "雷光の結晶"): {"name": "鋼鉄製 爆雷弾", "img": "🔩🔥⚡", "pierce": 5, "dot": 20},
+        ("鋼鉄塊", "涼風の結晶", "豪炎の結晶"): {"name": "鋼鉄製 熱風弾", "img": "🔩🔥🍃", "pierce": 8, "dot": 12},
+        ("鋼鉄塊", "蒼氷の結晶", "雷光の結晶"): {"name": "鋼鉄製 凍雷弾", "img": "🔩❄️⚡", "pierce": 15, "dot": 8},
+        ("鋼鉄塊", "涼風の結晶", "蒼氷の結晶"): {"name": "鋼鉄製 吹雪弾", "img": "🔩❄️🍃", "pierce": 6, "dot": 8},
+        ("鋼鉄塊", "涼風の結晶", "雷光の結晶"): {"name": "鋼鉄製 嵐弾", "img": "🔩⚡🍃", "pierce": 4, "dot": 16},
+        
+        ("ミスリル塊", "蒼氷の結晶", "豪炎の結晶"): {"name": "ミスリル製 蒸気爆弾", "img": "✨🔥❄️", "pierce": 20, "dot": 15},
+        ("ミスリル塊", "豪炎の結晶", "雷光の結晶"): {"name": "ミスリル製 爆雷弾", "img": "✨🔥⚡", "pierce": 10, "dot": 30},
+        ("ミスリル塊", "涼風の結晶", "豪炎の結晶"): {"name": "ミスリル製 熱風弾", "img": "✨🔥🍃", "pierce": 15, "dot": 20},
+        ("ミスリル塊", "蒼氷の結晶", "雷光の結晶"): {"name": "ミスリル製 凍雷弾", "img": "✨❄️⚡", "pierce": 25, "dot": 12},
+        ("ミスリル塊", "涼風の結晶", "蒼氷の結晶"): {"name": "ミスリル製 吹雪弾", "img": "✨❄️🍃", "pierce": 12, "dot": 12},
+        ("ミスリル塊", "涼風の結晶", "雷光の結晶"): {"name": "ミスリル製 嵐弾", "img": "✨⚡🍃", "pierce": 8, "dot": 25},
     }
 
     key = (metal["name"], m1_name, m2_name)
@@ -138,8 +85,13 @@ def get_bullet_info(metal, magic1, magic2):
         {
             "name": f"{metal['name']} × {m1_name}&{m2_name}",
             "img": f"🎯{metal['img']}",
+            "pierce": 5,
+            "dot": 5,
         },
     )
+   
+
+    
 
 
 def start_battle(selected_metal_idx, selected_magic_indices):
@@ -147,16 +99,15 @@ def start_battle(selected_metal_idx, selected_magic_indices):
     magic1 = st.session_state.magics[selected_magic_indices[0]]
     magic2 = st.session_state.magics[selected_magic_indices[1]]
 
-    # 18通りに対応する固有の銃弾データを取得
     b_info = get_bullet_info(metal, magic1, magic2)
-
-    # 1発あたりのダメージ計算
     single_damage = int(metal["power"] * magic1["mult"] * magic2["mult"])
 
     st.session_state.bullets = {
         "name": b_info["name"],
         "img": b_info["img"],
         "single_damage": single_damage,
+        "pierce": b_info["pierce"],
+        "dot": b_info["dot"],
         "count": 10,
     }
 
@@ -166,7 +117,7 @@ def start_battle(selected_metal_idx, selected_magic_indices):
         random.choice(ENEMY_TYPES) for _ in range(num_enemies)
     ]
 
-    base_hp = 100 + (st.session_state.loop * 40)
+    base_hp = 120 + (st.session_state.loop * 45)
     st.session_state.enemy_max_hp = base_hp
     st.session_state.enemy_hp = base_hp
 
@@ -183,14 +134,13 @@ if st.session_state.state in ["craft", "battle"]:
 
 # 1. スタート画面
 if st.session_state.state == "start":
-    st.markdown("### 【ゲームルール】")
-    st.markdown(
-        "* **合成フェーズ**: ドロップした「金属素材」1つと「魔力素材」2つを組み合わせて、強力な銃弾（10発）を合成します。"
-    )
-    st.markdown(
-        "* **戦闘フェーズ**: 1発ずつ銃弾を撃ち込み、現れた複数の敵を倒します。"
-    )
-    st.markdown("* **勝利条件**: 全10回のループを生き抜き、すべての敵を倒すこと！")
+    st.markdown("### 【ゲームルール & 戦略ヒント】")
+    st.markdown("* **合成フェーズ**: 銃弾ごとに**「貫通力」**や**「継続ダメージ」**の性能が異なります。")
+    st.markdown("* **敵の特性**: 
+  * 🗿 **高防御力**: 貫通力の高い弾が有効
+  * 🌳 **高回復力**: 毎ターンHPを削る「継続ダメージ」弾で相殺
+  * 🥷 **高回避率**: 確実に当てるための工夫が必要
+  * 🐗 **高攻撃力**: 短期決戦で素早く倒すべし！")
     if st.button("ゲームスタート", type="primary", use_container_width=True):
         start_game()
         st.rerun()
@@ -198,9 +148,7 @@ if st.session_state.state == "start":
 # 2. 合成フェーズ
 elif st.session_state.state == "craft":
     st.subheader("🛠️ 合成フェーズ")
-    st.write(
-        "手に入れた素材から **金属素材 1つ** と **魔力素材 2つ** を選択してください。"
-    )
+    st.write("手に入れた素材から **金属素材 1つ** と **魔力素材 2つ** を選択してください。")
 
     col1, col2 = st.columns(2)
 
@@ -230,35 +178,26 @@ elif st.session_state.state == "craft":
         )
 
     # プレビュー表示
-    # 合成プレビュー表示部分
     if len(selected_magic_indices) == 2:
         m_preview = st.session_state.metals[selected_metal_idx]
         mg1_preview = st.session_state.magics[selected_magic_indices[0]]
         mg2_preview = st.session_state.magics[selected_magic_indices[1]]
 
-        # 18通りのプレビュー情報を取得
         preview_b_info = get_bullet_info(m_preview, mg1_preview, mg2_preview)
         preview_damage = int(
-            m_preview["power"]
-            * mg1_preview["mult"]
-            * mg2_preview["mult"]
-            * 10
+            m_preview["power"] * mg1_preview["mult"] * mg2_preview["mult"] * 10
         )
 
         st.markdown("---")
         st.markdown("#### 🔍 合成プレビュー")
-        st.markdown(
-            f"### {preview_b_info['img']} **{preview_b_info['name']}**"
-        )
-        st.write(
-            f"予測総威力: **{preview_damage}** （1発あたり約 {int(preview_damage/10)} × 10発）"
-        )
+        st.markdown(f"### {preview_b_info['img']} **{preview_b_info['name']}**")
+        st.write(f"予測総威力: **{preview_damage}** （1発あたり約 {int(preview_damage/10)} × 10発）")
+        st.write(f"⚔️ **貫通力**: {preview_b_info['pierce']} （敵の防御力を減衰）")
+        st.write(f"🔥 **継続ダメージ(DOT)**: {preview_b_info['dot']} （毎発動時に追加ダメージ）")
 
     st.markdown("---")
     if len(selected_magic_indices) == 2:
-        if st.button(
-            "銃弾を合成して戦闘へ！", type="primary", use_container_width=True
-        ):
+        if st.button("銃弾を合成して戦闘へ！", type="primary", use_container_width=True):
             start_battle(selected_metal_idx, selected_magic_indices)
             st.rerun()
     else:
@@ -268,23 +207,17 @@ elif st.session_state.state == "craft":
 elif st.session_state.state == "battle":
     st.subheader("⚔️ 戦闘フェーズ")
 
-    # 複数出現する敵の表示
-    st.markdown("#### 👾 襲い来る敵グループ")
+    # 複数出現する敵の表示（特性つき）
+    st.markdown("#### 👾 襲い来る敵グループ（特性持ち）")
     enemy_cols = st.columns(len(st.session_state.enemies))
     for idx, enemy in enumerate(st.session_state.enemies):
         with enemy_cols[idx]:
-            st.markdown(
-                f"<div style='text-align: center; font-size: 2rem;'>{enemy['img']}</div>",
-                unsafe_allow_html=True,
-            )
-            st.markdown(
-                f"<div style='text-align: center;'>{enemy['name']}</div>",
-                unsafe_allow_html=True,
-            )
+            st.markdown(f"<div style='text-align: center; font-size: 2rem;'>{enemy['img']}</div>", unsafe_allow_html=True)
+            st.markdown(f"<div style='text-align: center;'><b>{enemy['name']}</b></div>", unsafe_allow_html=True)
+            st.markdown(f"<div style='text-align: center; font-size: 0.8rem; color: gray;'>ATK:{enemy['atk']} / DEF:{enemy['def']} / 回復:{enemy['heal']}</div>", unsafe_allow_html=True)
 
     st.markdown("---")
 
-    # ステータス表示エリア
     hp_metric_placeholder = st.empty()
     progress_placeholder = st.empty()
     status_msg_placeholder = st.empty()
@@ -294,46 +227,52 @@ elif st.session_state.state == "battle":
         value=f"{st.session_state.enemy_hp} / {st.session_state.enemy_max_hp}",
     )
     progress_placeholder.progress(
-        max(
-            0.0,
-            min(
-                1.0,
-                st.session_state.enemy_hp / st.session_state.enemy_max_hp,
-            ),
-        )
+        max(0.0, min(1.0, st.session_state.enemy_hp / st.session_state.enemy_max_hp))
     )
 
     st.info(
-        f"🎯 装着中の銃弾: {st.session_state.bullets['img']} **{st.session_state.bullets['name']}** (1発威力: {st.session_state.bullets['single_damage']})"
+        f"🎯 装着中の銃弾: {st.session_state.bullets['img']} **{st.session_state.bullets['name']}** "
+        f"(1発威力: {st.session_state.bullets['single_damage']} | 貫通: {st.session_state.bullets['pierce']} | 継続: {st.session_state.bullets['dot']})"
     )
 
     if st.button("銃弾を連射して攻撃を開始！", type="primary", use_container_width=True):
+        # 敵全体の平均防御力・回避率・回復力を算出
+        avg_def = sum([e["def"] for e in st.session_state.enemies]) / len(st.session_state.enemies)
+        avg_heal = sum([e["heal"] for e in st.session_state.enemies]) / len(st.session_state.enemies)
+        avg_evade = sum([e["evade"] for e in st.session_state.enemies]) / len(st.session_state.enemies)
+
         # 1発ずつ消費する演出（ループ処理）
         for shot in range(1, 11):
             if st.session_state.enemy_hp <= 0:
                 break
 
-            damage = st.session_state.bullets["single_damage"]
-            st.session_state.enemy_hp = max(0, st.session_state.enemy_hp - damage)
+            # 回避判定
+            if random.random() < avg_evade:
+                status_msg_placeholder.warning(f"💨 【{shot}発目】 敵に回避されてしまった…！ (ダメージ 0)")
+                time.sleep(0.3)
+                continue
 
-            # 画面をリアルタイムに更新
+            # ダメージ計算（基本ダメージ - 防御力 + 貫通力 + 継続ダメージ）
+            effective_def = max(0, avg_def - st.session_state.bullets["pierce"])
+            hit_damage = max(1, st.session_state.bullets["single_damage"] - effective_def)
+            total_shot_damage = hit_damage + st.session_state.bullets["dot"]
+
+            # 敵の回復力による相殺処理
+            total_shot_damage = max(1, total_shot_damage - int(avg_heal))
+
+            st.session_state.enemy_hp = max(0, st.session_state.enemy_hp - total_shot_damage)
+
             hp_metric_placeholder.metric(
                 label="敵チームの合計HP",
                 value=f"{st.session_state.enemy_hp} / {st.session_state.enemy_max_hp}",
             )
             progress_placeholder.progress(
-                max(
-                    0.0,
-                    min(
-                        1.0,
-                        st.session_state.enemy_hp / st.session_state.enemy_max_hp,
-                    ),
-                )
+                max(0.0, min(1.0, st.session_state.enemy_hp / st.session_state.enemy_max_hp))
             )
             status_msg_placeholder.warning(
-                f"🔥 【{shot}発目】 弾丸が命中！ {damage} のダメージを与えた！（残りHP: {st.session_state.enemy_hp}）"
+                f"🔥 【{shot}発目】 命中！貫通・継続効果を含め {total_shot_damage} のダメージ！（残りHP: {st.session_state.enemy_hp}）"
             )
-            time.sleep(0.3)   # 1発ごとのウェイト（演出用）
+            time.sleep(0.3)
 
         # 判定
         if st.session_state.enemy_hp <= 0:
@@ -360,9 +299,7 @@ elif st.session_state.state == "next_stage":
 # 5. ゲームオーバー画面
 elif st.session_state.state == "gameover":
     st.error("💥 敵のHPを削り切れず、返り討ちにあってしまった…！")
-    st.write(
-        f"到達ステージ: 第 {st.session_state.loop} ステージ（残敵HP: {st.session_state.enemy_hp}）"
-    )
+    st.write(f"到達ステージ: 第 {st.session_state.loop} ステージ（残敵HP: {st.session_state.enemy_hp}）")
 
     if st.button("もう一度挑戦する", type="primary", use_container_width=True):
         start_game()
