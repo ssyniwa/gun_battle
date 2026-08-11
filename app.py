@@ -1,18 +1,27 @@
 import random
+import time
 import streamlit as st
 
 # --- 定義 ---
 METALS = [
-    {"name": "鉄塊", "power": 10},
-    {"name": "鋼鉄塊", "power": 15},
-    {"name": "ミスリル塊", "power": 25},
+    {"name": "鉄塊", "power": 10, "img": "⚙️"},
+    {"name": "鋼鉄塊", "power": 15, "img": "🔩"},
+    {"name": "ミスリル塊", "power": 25, "img": "✨"},
 ]
 
 MAGICS = [
-    {"name": "豪炎の結晶", "mult": 1.5},
-    {"name": "蒼氷の結晶", "mult": 1.4},
-    {"name": "雷光の結晶", "mult": 1.6},
-    {"name": "涼風の結晶", "mult": 1.3},
+    {"name": "豪炎の結晶", "mult": 1.5, "img": "🔥"},
+    {"name": "蒼氷の結晶", "mult": 1.4, "img": "❄️"},
+    {"name": "雷光の結晶", "mult": 1.6, "img": "⚡"},
+    {"name": "涼風の結晶", "mult": 1.3, "img": "🍃"},
+]
+
+# 敵リストの定義
+ENEMY_TYPES = [
+    {"name": "スライム", "img": "🟢"},
+    {"name": "ゴブリン", "img": "👺"},
+    {"name": "オーク", "img": "🐗"},
+    {"name": "ドラゴン", "img": "🐉"},
 ]
 
 # --- セッションステートの初期化 ---
@@ -21,10 +30,10 @@ if "state" not in st.session_state:
     st.session_state.loop = 1
     st.session_state.metals = []
     st.session_state.magics = []
-    st.session_state.bullets = None  # {"name": str, "total_damage": int, "count": int}
+    st.session_state.bullets = None
+    st.session_state.enemies = []  # リストから選ばれた複数の敵
     st.session_state.enemy_hp = 0
     st.session_state.enemy_max_hp = 0
-    st.session_state.enemy_count = 0
 
 
 def start_game():
@@ -34,7 +43,6 @@ def start_game():
 
 
 def generate_materials():
-    # ランダムに素材をドロップ
     st.session_state.metals = [random.choice(METALS) for _ in range(3)]
     st.session_state.magics = [random.choice(MAGICS) for _ in range(4)]
     st.session_state.bullets = None
@@ -45,23 +53,29 @@ def start_battle(selected_metal_idx, selected_magic_indices):
     magic1 = st.session_state.magics[selected_magic_indices[0]]
     magic2 = st.session_state.magics[selected_magic_indices[1]]
 
-    # 銃弾の計算: 金属基礎攻撃力 × 魔力倍率1 × 魔力倍率2 × 10発分
-    single_damage = metal["power"] * magic1["mult"] * magic2["mult"]
-    total_damage = int(single_damage * 10)
+    # 1発あたりのダメージ
+    single_damage = int(metal["power"] * magic1["mult"] * magic2["mult"])
     bullet_name = f"{metal['name']} × {magic1['name']} & {magic2['name']}"
+    # 銃弾の見た目アイコン（金属＋魔力）
+    bullet_img = f"🎯{metal['img']}{magic1['img']}{magic2['img']}"
 
     st.session_state.bullets = {
         "name": bullet_name,
-        "total_damage": total_damage,
+        "img": bullet_img,
+        "single_damage": single_damage,
         "count": 10,
     }
 
-    # 敵の設定（ループが進むにつれて強力に）
-    st.session_state.enemy_count = random.randint(1, 3) + (
-        st.session_state.loop // 3
-    )
-    st.session_state.enemy_max_hp = 80 + (st.session_state.loop * 35)
-    st.session_state.enemy_hp = st.session_state.enemy_max_hp
+    # 敵リストから複数選出（1〜3体 + ループ補正）
+    num_enemies = random.randint(1, 2) + (st.session_state.loop // 4)
+    st.session_state.enemies = [
+        random.choice(ENEMY_TYPES) for _ in range(num_enemies)
+    ]
+
+    # 敵のHP設定
+    base_hp = 100 + (st.session_state.loop * 40)
+    st.session_state.enemy_max_hp = base_hp
+    st.session_state.enemy_hp = base_hp
 
     st.session_state.state = "battle"
 
@@ -69,7 +83,6 @@ def start_battle(selected_metal_idx, selected_magic_indices):
 # --- 画面レイアウト ---
 st.title("🔫 弾薬合成 ＆ バトルRPG")
 
-# 進捗表示
 if st.session_state.state in ["craft", "battle"]:
     st.markdown(f"### 📍 現在のステージ: **第 {st.session_state.loop} / 10 回**")
     st.progress(st.session_state.loop / 10)
@@ -82,7 +95,7 @@ if st.session_state.state == "start":
         "* **合成フェーズ**: ドロップした「金属素材」1つと「魔力素材」2つを組み合わせて、強力な銃弾（10発）を合成します。"
     )
     st.markdown(
-        "* **戦闘フェーズ**: 合成した銃弾を使って、次々に出現する敵を倒します。"
+        "* **戦闘フェーズ**: 1発ずつ銃弾を撃ち込み、現れた複数の敵を倒します。"
     )
     st.markdown("* **勝利条件**: 全10回のループを生き抜き、すべての敵を倒すこと！")
     if st.button("ゲームスタート", type="primary", use_container_width=True):
@@ -101,7 +114,7 @@ elif st.session_state.state == "craft":
     with col1:
         st.markdown("#### 🧱 入手した金属素材")
         metal_options = [
-            f"{m['name']} (基礎攻撃力: {m['power']})"
+            f"{m['img']} {m['name']} (基礎攻撃力: {m['power']})"
             for m in st.session_state.metals
         ]
         selected_metal_idx = st.radio(
@@ -113,7 +126,7 @@ elif st.session_state.state == "craft":
     with col2:
         st.markdown("#### 🔮 入手した魔力素材")
         magic_options = [
-            f"{m['name']} (倍率: x{m['mult']})"
+            f"{m['img']} {m['name']} (倍率: x{m['mult']})"
             for m in st.session_state.magics
         ]
         selected_magic_indices = st.multiselect(
@@ -121,6 +134,25 @@ elif st.session_state.state == "craft":
             range(len(magic_options)),
             format_func=lambda x: magic_options[x],
             max_selections=2,
+        )
+
+    # プレビュー表示
+    if len(selected_magic_indices) == 2:
+        m_preview = st.session_state.metals[selected_metal_idx]
+        mg1_preview = st.session_state.magics[selected_magic_indices[0]]
+        mg2_preview = st.session_state.magics[selected_magic_indices[1]]
+        preview_img = f"🎯{m_preview['img']}{mg1_preview['img']}{mg2_preview['img']}"
+        preview_damage = int(
+            m_preview["power"] * mg1_preview["mult"] * mg2_preview["mult"] * 10
+        )
+
+        st.markdown("---")
+        st.markdown("#### 🔍 合成プレビュー")
+        st.markdown(
+            f"### {preview_img} **{m_preview['name']} × {mg1_preview['name']} & {mg2_preview['name']}**"
+        )
+        st.write(
+            f"予測総威力: **{preview_damage}** （1発あたり約 {int(preview_damage/10)} × 10発）"
         )
 
     st.markdown("---")
@@ -137,16 +169,32 @@ elif st.session_state.state == "craft":
 elif st.session_state.state == "battle":
     st.subheader("⚔️ 戦闘フェーズ")
 
-    col_e1, col_e2 = st.columns(2)
-    with col_e1:
-        st.metric(label="敵の数", value=f"{st.session_state.enemy_count} 体")
-    with col_e2:
-        st.metric(
-            label="敵の合計HP",
-            value=f"{st.session_state.enemy_hp} / {st.session_state.enemy_max_hp}",
-        )
+    # 複数出現する敵の表示
+    st.markdown("#### 👾 襲い来る敵グループ")
+    enemy_cols = st.columns(len(st.session_state.enemies))
+    for idx, enemy in enumerate(st.session_state.enemies):
+        with enemy_cols[idx]:
+            st.markdown(
+                f"<div style='text-align: center; font-size: 2rem;'>{enemy['img']}</div>",
+                unsafe_allow_html=True,
+            )
+            st.markdown(
+                f"<div style='text-align: center;'>{enemy['name']}</div>",
+                unsafe_allow_html=True,
+            )
 
-    st.progress(
+    st.markdown("---")
+
+    # ステータス表示エリア
+    hp_metric_placeholder = st.empty()
+    progress_placeholder = st.empty()
+    status_msg_placeholder = st.empty()
+
+    hp_metric_placeholder.metric(
+        label="敵チームの合計HP",
+        value=f"{st.session_state.enemy_hp} / {st.session_state.enemy_max_hp}",
+    )
+    progress_placeholder.progress(
         max(
             0.0,
             min(
@@ -157,20 +205,46 @@ elif st.session_state.state == "battle":
     )
 
     st.info(
-        f"🎯 使用する銃弾: **{st.session_state.bullets['name']}** (総威力: {st.session_state.bullets['total_damage']} / 10発)"
+        f"🎯 装着中の銃弾: {st.session_state.bullets['img']} **{st.session_state.bullets['name']}** (1発威力: {st.session_state.bullets['single_damage']})"
     )
 
-    if st.button("銃弾を全弾発射して攻撃！", type="primary", use_container_width=True):
-        damage = st.session_state.bullets["total_damage"]
-        st.session_state.enemy_hp -= damage
+    if st.button("銃弾を連射して攻撃を開始！", type="primary", use_container_width=True):
+        # 1発ずつ消費する演出（ループ処理）
+        for shot in range(1, 11):
+            if st.session_state.enemy_hp <= 0:
+                break
 
+            damage = st.session_state.bullets["single_damage"]
+            st.session_state.enemy_hp = max(0, st.session_state.enemy_hp - damage)
+
+            # 画面をリアルタイムに更新
+            hp_metric_placeholder.metric(
+                label="敵チームの合計HP",
+                value=f"{st.session_state.enemy_hp} / {st.session_state.enemy_max_hp}",
+            )
+            progress_placeholder.progress(
+                max(
+                    0.0,
+                    min(
+                        1.0,
+                        st.session_state.enemy_hp / st.session_state.enemy_max_hp,
+                    ),
+                )
+            )
+            status_msg_placeholder.warning(
+                f"🔥 【{shot}発目】 弾丸が命中！ {damage} のダメージを与えた！（残りHP: {st.session_state.enemy_hp}）"
+            )
+            time.sleep(0.3)  - # 1発ごとのウェイト（演出用）
+
+        # 判定
         if st.session_state.enemy_hp <= 0:
-            st.session_state.enemy_hp = 0
+            time.sleep(0.5)
             if st.session_state.loop >= 10:
                 st.session_state.state = "clear"
             else:
                 st.session_state.state = "next_stage"
         else:
+            time.sleep(0.5)
             st.session_state.state = "gameover"
         st.rerun()
 
