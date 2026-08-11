@@ -14,6 +14,8 @@ MAGICS = [
     {"name": "蒼氷の結晶", "mult": 1.4, "img": "images/magic_ice.png"},
     {"name": "雷光の結晶", "mult": 1.6, "img": "images/magic_thunder.png"},
     {"name": "涼風の結晶", "mult": 1.3, "img": "images/magic_wind.png"},
+    {"name": "月光の結晶", "mult": 1.5, "img": "images/magic_moon.png"},
+    {"name": "闇夜の結晶", "mult": 1.7, "img": "images/magic_dark.png"},
 ]
 
 # 敵リストの定義（画像パスを指定）
@@ -53,27 +55,58 @@ def get_bullet_info(metal, magic1, magic2):
     sorted_magics = sorted([magic1["name"], magic2["name"]])
     m1_name, m2_name = sorted_magics[0], sorted_magics[1]
 
+    # 金属3種 × (6C2 = 15通りの魔力ペア) に対応するパターン定義
     bullet_patterns = {
+        # --- 鉄塊の組み合わせ ---
         ("鉄塊", "蒼氷の結晶", "豪炎の結晶"): {"name": "鉄製 蒸気爆弾", "img": "images/bullet_iron_fire_ice.png", "pierce": 5, "dot": 8},
         ("鉄塊", "豪炎の結晶", "雷光の結晶"): {"name": "鉄製 爆雷弾", "img": "images/bullet_iron_fire_thunder.png", "pierce": 0, "dot": 15},
         ("鉄塊", "涼風の結晶", "豪炎の結晶"): {"name": "鉄製 熱風弾", "img": "images/bullet_iron_fire_wind.png", "pierce": 2, "dot": 10},
+        ("鉄塊", "月光の結晶", "豪炎の結晶"): {"name": "鉄製 陽炎弾", "img": "images/bullet_iron_fire_moon.png", "pierce": 4, "dot": 12},
+        ("鉄塊", "豪炎の結晶", "闇夜の結晶"): {"name": "鉄製 冥火弾", "img": "images/bullet_iron_fire_dark.png", "pierce": 6, "dot": 18},
         ("鉄塊", "蒼氷の結晶", "雷光の結晶"): {"name": "鉄製 凍雷弾", "img": "images/bullet_iron_ice_thunder.png", "pierce": 8, "dot": 5},
         ("鉄塊", "涼風の結晶", "蒼氷の結晶"): {"name": "鉄製 吹雪弾", "img": "images/bullet_iron_ice_wind.png", "pierce": 3, "dot": 5},
+        ("鉄塊", "月光の結晶", "蒼氷の結晶"): {"name": "鉄製 霊水弾", "img": "images/bullet_iron_ice_moon.png", "pierce": 5, "dot": 7},
+        ("鉄塊", "蒼氷の結晶", "闇夜の結晶"): {"name": "鉄製 幽氷弾", "img": "images/bullet_iron_ice_dark.png", "pierce": 7, "dot": 10},
         ("鉄塊", "涼風の結晶", "雷光の結晶"): {"name": "鉄製 嵐弾", "img": "images/bullet_iron_thunder_wind.png", "pierce": 0, "dot": 12},
-        
+        ("鉄塊", "月光の結晶", "雷光の結晶"): {"name": "鉄製 閃光弾", "img": "images/bullet_iron_thunder_moon.png", "pierce": 10, "dot": 6},
+        ("鉄塊", "雷光の結晶", "闇夜の結晶"): {"name": "鉄製 黒雷弾", "img": "images/bullet_iron_thunder_dark.png", "pierce": 8, "dot": 20},
+        ("鉄塊", "月光の結晶", "涼風の結晶"): {"name": "鉄製 幻風弾", "img": "images/bullet_iron_wind_moon.png", "pierce": 3, "dot": 8},
+        ("鉄塊", "涼風の結晶", "闇夜の結晶"): {"name": "鉄製 陰風弾", "img": "images/bullet_iron_wind_dark.png", "pierce": 4, "dot": 14},
+        ("鉄塊", "月光の結晶", "闇夜の結晶"): {"name": "鉄製 混沌弾", "img": "images/bullet_iron_moon_dark.png", "pierce": 12, "dot": 15},
+
+        # --- 鋼鉄塊の組み合わせ ---
         ("鋼鉄塊", "蒼氷の結晶", "豪炎の結晶"): {"name": "鋼鉄製 蒸気爆弾", "img": "images/bullet_steel_fire_ice.png", "pierce": 10, "dot": 10},
         ("鋼鉄塊", "豪炎の結晶", "雷光の結晶"): {"name": "鋼鉄製 爆雷弾", "img": "images/bullet_steel_fire_thunder.png", "pierce": 5, "dot": 20},
         ("鋼鉄塊", "涼風の結晶", "豪炎の結晶"): {"name": "鋼鉄製 熱風弾", "img": "images/bullet_steel_fire_wind.png", "pierce": 8, "dot": 12},
+        ("鋼鉄塊", "月光の結晶", "豪炎の結晶"): {"name": "鋼鉄製 陽炎弾", "img": "images/bullet_steel_fire_moon.png", "pierce": 10, "dot": 15},
+        ("鋼鉄塊", "豪炎の結晶", "闇夜の結晶"): {"name": "鋼鉄製 冥火弾", "img": "images/bullet_steel_fire_dark.png", "pierce": 12, "dot": 22},
         ("鋼鉄塊", "蒼氷の結晶", "雷光の結晶"): {"name": "鋼鉄製 凍雷弾", "img": "images/bullet_steel_ice_thunder.png", "pierce": 15, "dot": 8},
         ("鋼鉄塊", "涼風の結晶", "蒼氷の結晶"): {"name": "鋼鉄製 吹雪弾", "img": "images/bullet_steel_ice_wind.png", "pierce": 6, "dot": 8},
+        ("鋼鉄塊", "月光の結晶", "蒼氷の結晶"): {"name": "鋼鉄製 霊水弾", "img": "images/bullet_steel_ice_moon.png", "pierce": 11, "dot": 10},
+        ("鋼鉄塊", "蒼氷の結晶", "闇夜の結晶"): {"name": "鋼鉄製 幽氷弾", "img": "images/bullet_steel_ice_dark.png", "pierce": 14, "dot": 13},
         ("鋼鉄塊", "涼風の結晶", "雷光の結晶"): {"name": "鋼鉄製 嵐弾", "img": "images/bullet_steel_thunder_wind.png", "pierce": 4, "dot": 16},
-        
+        ("鋼鉄塊", "月光の結晶", "雷光の結晶"): {"name": "鋼鉄製 閃光弾", "img": "images/bullet_steel_thunder_moon.png", "pierce": 16, "dot": 9},
+        ("鋼鉄塊", "雷光の結晶", "闇夜の結晶"): {"name": "鋼鉄製 黒雷弾", "img": "images/bullet_steel_thunder_dark.png", "pierce": 15, "dot": 25},
+        ("鋼鉄塊", "月光の結晶", "涼風の結晶"): {"name": "鋼鉄製 幻風弾", "img": "images/bullet_steel_wind_moon.png", "pierce": 8, "dot": 11},
+        ("鋼鉄塊", "涼風の結晶", "闇夜の結晶"): {"name": "鋼鉄製 陰風弾", "img": "images/bullet_steel_wind_dark.png", "pierce": 10, "dot": 18},
+        ("鋼鉄塊", "月光の結晶", "闇夜の結晶"): {"name": "鋼鉄製 混沌弾", "img": "images/bullet_steel_moon_dark.png", "pierce": 18, "dot": 20},
+
+        # --- ミスリル塊の組み合わせ ---
         ("ミスリル塊", "蒼氷の結晶", "豪炎の結晶"): {"name": "ミスリル製 蒸気爆弾", "img": "images/bullet_mithril_fire_ice.png", "pierce": 20, "dot": 15},
         ("ミスリル塊", "豪炎の結晶", "雷光の結晶"): {"name": "ミスリル製 爆雷弾", "img": "images/bullet_mithril_fire_thunder.png", "pierce": 10, "dot": 30},
         ("ミスリル塊", "涼風の結晶", "豪炎の結晶"): {"name": "ミスリル製 熱風弾", "img": "images/bullet_mithril_fire_wind.png", "pierce": 15, "dot": 20},
+        ("ミスリル塊", "月光の結晶", "豪炎の結晶"): {"name": "ミスリル製 陽炎弾", "img": "images/bullet_mithril_fire_moon.png", "pierce": 18, "dot": 22},
+        ("ミスリル塊", "豪炎の結晶", "闇夜の結晶"): {"name": "ミスリル製 冥火弾", "img": "images/bullet_mithril_fire_dark.png", "pierce": 22, "dot": 35},
         ("ミスリル塊", "蒼氷の結晶", "雷光の結晶"): {"name": "ミスリル製 凍雷弾", "img": "images/bullet_mithril_ice_thunder.png", "pierce": 25, "dot": 12},
         ("ミスリル塊", "涼風の結晶", "蒼氷の結晶"): {"name": "ミスリル製 吹雪弾", "img": "images/bullet_mithril_ice_wind.png", "pierce": 12, "dot": 12},
+        ("ミスリル塊", "月光の結晶", "蒼氷の結晶"): {"name": "ミスリル製 霊水弾", "img": "images/bullet_mithril_ice_moon.png", "pierce": 20, "dot": 16},
+        ("ミスリル塊", "蒼氷の結晶", "闇夜の結晶"): {"name": "ミスリル製 幽氷弾", "img": "images/bullet_mithril_ice_dark.png", "pierce": 24, "dot": 20},
         ("ミスリル塊", "涼風の結晶", "雷光の結晶"): {"name": "ミスリル製 嵐弾", "img": "images/bullet_mithril_thunder_wind.png", "pierce": 8, "dot": 25},
+        ("ミスリル塊", "月光の結晶", "雷光の結晶"): {"name": "ミスリル製 閃光弾", "img": "images/bullet_mithril_thunder_moon.png", "pierce": 28, "dot": 15},
+        ("ミスリル塊", "雷光の結晶", "闇夜の結晶"): {"name": "ミスリル製 黒雷弾", "img": "images/bullet_mithril_thunder_dark.png", "pierce": 25, "dot": 40},
+        ("ミスリル塊", "月光の結晶", "涼風の結晶"): {"name": "ミスリル製 幻風弾", "img": "images/bullet_mithril_wind_moon.png", "pierce": 15, "dot": 18},
+        ("ミスリル塊", "涼風の結晶", "闇夜の結晶"): {"name": "ミスリル製 陰風弾", "img": "images/bullet_mithril_wind_dark.png", "pierce": 18, "dot": 28},
+        ("ミスリル塊", "月光の結晶", "闇夜の結晶"): {"name": "ミスリル製 混沌弾", "img": "images/bullet_mithril_moon_dark.png", "pierce": 30, "dot": 30},
     }
 
     key = (metal["name"], m1_name, m2_name)
