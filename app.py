@@ -48,31 +48,124 @@ def generate_materials():
     st.session_state.bullets = None
 
 
+# --- 修正・追加する定義と関数 ---
+
+# 魔力素材の組み合わせ（6通り）を判定して18通りの銃弾情報を返す関数
+def get_bullet_info(metal, magic1, magic2):
+    # 魔力2つの名前をソートして順序に依存しないようにする（6通りを網羅）
+    sorted_magics = sorted([magic1["name"], magic2["name"]])
+    m1_name, m2_name = sorted_magics[0], sorted_magics[1]
+
+    # 18通り（金属3種 × 魔力ペア6種）の固有名称と画像アイコンの定義
+    bullet_patterns = {
+        ("鉄塊", "蒼氷の結晶", "豪炎の結晶"): {
+            "name": "鉄製 蒸気爆弾",
+            "img": "⚙️🔥❄️",
+        },
+        ("鉄塊", "豪炎の結晶", "雷光の結晶"): {
+            "name": "鉄製 爆雷弾",
+            "img": "⚙️🔥⚡",
+        },
+        ("鉄塊", "涼風の結晶", "豪炎の結晶"): {
+            "name": "鉄製 熱風弾",
+            "img": "⚙️🔥🍃",
+        },
+        ("鉄塊", "蒼氷の結晶", "雷光の結晶"): {
+            "name": "鉄製 凍雷弾",
+            "img": "⚙️❄️⚡",
+        },
+        ("鉄塊", "涼風の結晶", "蒼氷の結晶"): {
+            "name": "鉄製 吹雪弾",
+            "img": "⚙️❄️🍃",
+        },
+        ("鉄塊", "涼風の結晶", "雷光の結晶"): {
+            "name": "鉄製 嵐弾",
+            "img": "⚙️⚡🍃",
+        },
+        ("鋼鉄塊", "蒼氷の結晶", "豪炎の結晶"): {
+            "name": "鋼鉄製 蒸気爆弾",
+            "img": "🔩🔥❄️",
+        },
+        ("鋼鉄塊", "豪炎の結晶", "雷光の結晶"): {
+            "name": "鋼鉄製 爆雷弾",
+            "img": "🔩🔥⚡",
+        },
+        ("鋼鉄塊", "涼風の結晶", "豪炎の結晶"): {
+            "name": "鋼鉄製 熱風弾",
+            "img": "🔩🔥🍃",
+        },
+        ("鋼鉄塊", "蒼氷の結晶", "雷光の結晶"): {
+            "name": "鋼鉄製 凍雷弾",
+            "img": "🔩❄️⚡",
+        },
+        ("鋼鉄塊", "涼風の結晶", "蒼氷の結晶"): {
+            "name": "鋼鉄製 吹雪弾",
+            "img": "🔩❄️🍃",
+        },
+        ("鋼鉄塊", "涼風の結晶", "雷光の結晶"): {
+            "name": "鋼鉄製 嵐弾",
+            "img": "🔩⚡🍃",
+        },
+        ("ミスリル塊", "蒼氷の結晶", "豪炎の結晶"): {
+            "name": "ミスリル製 蒸気爆弾",
+            "img": "✨🔥❄️",
+        },
+        ("ミスリル塊", "豪炎の結晶", "雷光の結晶"): {
+            "name": "ミスリル製 爆雷弾",
+            "img": "✨🔥⚡",
+        },
+        ("ミスリル塊", "涼風の結晶", "豪炎の結晶"): {
+            "name": "ミスリル製 熱風弾",
+            "img": "✨🔥🍃",
+        },
+        ("ミスリル塊", "蒼氷の結晶", "雷光の結晶"): {
+            "name": "ミスリル製 凍雷弾",
+            "img": "✨❄️⚡",
+        },
+        ("ミスリル塊", "涼風の結晶", "蒼氷の結晶"): {
+            "name": "ミスリル製 吹雪弾",
+            "img": "✨❄️🍃",
+        },
+        ("ミスリル塊", "涼風の結晶", "雷光の結晶"): {
+            "name": "ミスリル製 嵐弾",
+            "img": "✨⚡🍃",
+        },
+    }
+
+    key = (metal["name"], m1_name, m2_name)
+    return bullet_patterns.get(
+        key,
+        {
+            "name": f"{metal['name']} × {m1_name}&{m2_name}",
+            "img": f"🎯{metal['img']}",
+        },
+    )
+
+
 def start_battle(selected_metal_idx, selected_magic_indices):
     metal = st.session_state.metals[selected_metal_idx]
     magic1 = st.session_state.magics[selected_magic_indices[0]]
     magic2 = st.session_state.magics[selected_magic_indices[1]]
 
-    # 1発あたりのダメージ
+    # 18通りに対応する固有の銃弾データを取得
+    b_info = get_bullet_info(metal, magic1, magic2)
+
+    # 1発あたりのダメージ計算
     single_damage = int(metal["power"] * magic1["mult"] * magic2["mult"])
-    bullet_name = f"{metal['name']} × {magic1['name']} & {magic2['name']}"
-    # 銃弾の見た目アイコン（金属＋魔力）
-    bullet_img = f"🎯{metal['img']}{magic1['img']}{magic2['img']}"
 
     st.session_state.bullets = {
-        "name": bullet_name,
-        "img": bullet_img,
+        "name": b_info["name"],
+        "img": b_info["img"],
         "single_damage": single_damage,
         "count": 10,
     }
 
-    # 敵リストから複数選出（1〜3体 + ループ補正）
+    # 敵リストから複数選出
     num_enemies = random.randint(1, 2) + (st.session_state.loop // 4)
     st.session_state.enemies = [
         random.choice(ENEMY_TYPES) for _ in range(num_enemies)
     ]
 
-    # 敵のHP設定
     base_hp = 100 + (st.session_state.loop * 40)
     st.session_state.enemy_max_hp = base_hp
     st.session_state.enemy_hp = base_hp
@@ -137,19 +230,25 @@ elif st.session_state.state == "craft":
         )
 
     # プレビュー表示
+    # 合成プレビュー表示部分
     if len(selected_magic_indices) == 2:
         m_preview = st.session_state.metals[selected_metal_idx]
         mg1_preview = st.session_state.magics[selected_magic_indices[0]]
         mg2_preview = st.session_state.magics[selected_magic_indices[1]]
-        preview_img = f"🎯{m_preview['img']}{mg1_preview['img']}{mg2_preview['img']}"
+
+        # 18通りのプレビュー情報を取得
+        preview_b_info = get_bullet_info(m_preview, mg1_preview, mg2_preview)
         preview_damage = int(
-            m_preview["power"] * mg1_preview["mult"] * mg2_preview["mult"] * 10
+            m_preview["power"]
+            * mg1_preview["mult"]
+            * mg2_preview["mult"]
+            * 10
         )
 
         st.markdown("---")
         st.markdown("#### 🔍 合成プレビュー")
         st.markdown(
-            f"### {preview_img} **{m_preview['name']} × {mg1_preview['name']} & {mg2_preview['name']}**"
+            f"### {preview_b_info['img']} **{preview_b_info['name']}**"
         )
         st.write(
             f"予測総威力: **{preview_damage}** （1発あたり約 {int(preview_damage/10)} × 10発）"
