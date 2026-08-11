@@ -234,7 +234,7 @@ elif st.session_state.state == "battle":
             status_msg_placeholder.warning(
                 f"🔥 【{shot}発目】 弾丸が命中！ {damage} のダメージを与えた！（残りHP: {st.session_state.enemy_hp}）"
             )
-            time.sleep(0.3)  - # 1発ごとのウェイト（演出用）
+            time.sleep(0.3)   # 1発ごとのウェイト（演出用）
 
         # 判定
         if st.session_state.enemy_hp <= 0:
