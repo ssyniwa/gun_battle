@@ -185,7 +185,7 @@ elif st.session_state.state == "craft":
             with col_img:
                 st.image(m["img"], width=40)
             with col_txt:
-                st.write(f"**{m['name']}** (基礎攻撃力: {m['power'])")
+                st.write(f"**{m['name']}** (基礎攻撃力: {m['power']})")
         
         selected_metal_idx = st.radio(
             "金属素材を選ぶ（1つ）",
