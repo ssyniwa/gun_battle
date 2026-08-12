@@ -6,7 +6,9 @@ import streamlit as st
 METALS = [
     {"name": "鉄塊", "power": 10, "img": "images/metal_iron.png"},
     {"name": "鋼鉄塊", "power": 15, "img": "images/metal_steel.png"},
+    {"name": "魔導金塊", "power": 20, "img": "images/metal_gold.png"},       # 【新規追加】
     {"name": "ミスリル塊", "power": 25, "img": "images/metal_mithril.png"},
+    {"name": "オリハルコン塊", "power": 35, "img": "images/metal_orichalcum.png"}, # 【新規追加】
 ]
 
 MAGICS = [
@@ -46,7 +48,6 @@ def start_game():
 
 def generate_materials():
     st.session_state.metals = [random.choice(METALS) for _ in range(3)]
-    # 4つの魔力素材をランダムドロップ（同じものが重複してドロップすることもある）
     st.session_state.magics = [random.choice(MAGICS) for _ in range(4)]
     st.session_state.bullets = None
 
@@ -73,7 +74,6 @@ def get_bullet_info(metal, magic1, magic2):
         ("鉄塊", "月光の結晶", "涼風の結晶"): {"name": "鉄製 幻風弾", "img": "images/bullet_iron_wind_moon.png", "pierce": 3, "dot": 8},
         ("鉄塊", "涼風の結晶", "闇夜の結晶"): {"name": "鉄製 陰風弾", "img": "images/bullet_iron_wind_dark.png", "pierce": 4, "dot": 14},
         ("鉄塊", "月光の結晶", "闇夜の結晶"): {"name": "鉄製 混沌弾", "img": "images/bullet_iron_moon_dark.png", "pierce": 12, "dot": 15},
-
         # --- 鉄塊の組み合わせ（同属性） ---
         ("鉄塊", "豪炎の結晶", "豪炎の結晶"): {"name": "鉄製 爆炎弾", "img": "images/bullet_iron_fire_fire.png", "pierce": 2, "dot": 20},
         ("鉄塊", "蒼氷の結晶", "蒼氷の結晶"): {"name": "鉄製 氷結弾", "img": "images/bullet_iron_ice_ice.png", "pierce": 6, "dot": 6},
@@ -98,7 +98,6 @@ def get_bullet_info(metal, magic1, magic2):
         ("鋼鉄塊", "月光の結晶", "涼風の結晶"): {"name": "鋼鉄製 幻風弾", "img": "images/bullet_steel_wind_moon.png", "pierce": 8, "dot": 11},
         ("鋼鉄塊", "涼風の結晶", "闇夜の結晶"): {"name": "鋼鉄製 陰風弾", "img": "images/bullet_steel_wind_dark.png", "pierce": 10, "dot": 18},
         ("鋼鉄塊", "月光の結晶", "闇夜の結晶"): {"name": "鋼鉄製 混沌弾", "img": "images/bullet_steel_moon_dark.png", "pierce": 18, "dot": 20},
-
         # --- 鋼鉄塊の組み合わせ（同属性） ---
         ("鋼鉄塊", "豪炎の結晶", "豪炎の結晶"): {"name": "鋼鉄製 爆炎弾", "img": "images/bullet_steel_fire_fire.png", "pierce": 6, "dot": 25},
         ("鋼鉄塊", "蒼氷の結晶", "蒼氷の結晶"): {"name": "鋼鉄製 氷結弾", "img": "images/bullet_steel_ice_ice.png", "pierce": 12, "dot": 10},
@@ -106,6 +105,30 @@ def get_bullet_info(metal, magic1, magic2):
         ("鋼鉄塊", "涼風の結晶", "涼風の結晶"): {"name": "鋼鉄製 旋風弾", "img": "images/bullet_steel_wind_wind.png", "pierce": 4, "dot": 15},
         ("鋼鉄塊", "月光の結晶", "月光の結晶"): {"name": "鋼鉄製 月光弾", "img": "images/bullet_steel_moon_moon.png", "pierce": 14, "dot": 18},
         ("鋼鉄塊", "闇夜の結晶", "闇夜の結晶"): {"name": "鋼鉄製 影縫弾", "img": "images/bullet_steel_dark_dark.png", "pierce": 16, "dot": 40},
+
+        # --- 魔導金塊の組み合わせ（異属性） ---
+        ("魔導金塊", "蒼氷の結晶", "豪炎の結晶"): {"name": "魔導金製 蒸気爆弾", "img": "images/bullet_gold_fire_ice.png", "pierce": 14, "dot": 12},
+        ("魔導金塊", "豪炎の結晶", "雷光の結晶"): {"name": "魔導金製 爆雷弾", "img": "images/bullet_gold_fire_thunder.png", "pierce": 7, "dot": 25},
+        ("魔導金塊", "涼風の結晶", "豪炎の結晶"): {"name": "魔導金製 熱風弾", "img": "images/bullet_gold_fire_wind.png", "pierce": 11, "dot": 15},
+        ("魔導金塊", "月光の結晶", "豪炎の結晶"): {"name": "魔導金製 陽炎弾", "img": "images/bullet_gold_fire_moon.png", "pierce": 14, "dot": 18},
+        ("魔導金塊", "豪炎の結晶", "闇夜の結晶"): {"name": "魔導金製 冥火弾", "img": "images/bullet_gold_fire_dark.png", "pierce": 17, "dot": 28},
+        ("魔導金塊", "蒼氷の結晶", "雷光の結晶"): {"name": "魔導金製 凍雷弾", "img": "images/bullet_gold_ice_thunder.png", "pierce": 20, "dot": 10},
+        ("魔導金塊", "涼風の結晶", "蒼氷の結晶"): {"name": "魔導金製 吹雪弾", "img": "images/bullet_gold_ice_wind.png", "pierce": 9, "dot": 10},
+        ("魔導金塊", "月光の結晶", "蒼氷の結晶"): {"name": "魔導金製 霊水弾", "img": "images/bullet_gold_ice_moon.png", "pierce": 15, "dot": 13},
+        ("魔導金塊", "蒼氷の結晶", "闇夜の結晶"): {"name": "魔導金製 幽氷弾", "img": "images/bullet_gold_ice_dark.png", "pierce": 19, "dot": 16},
+        ("魔導金塊", "涼風の結晶", "雷光の結晶"): {"name": "魔導金製 嵐弾", "img": "images/bullet_gold_thunder_wind.png", "pierce": 6, "dot": 20},
+        ("魔導金塊", "月光の結晶", "雷光の結晶"): {"name": "魔導金製 閃光弾", "img": "images/bullet_gold_thunder_moon.png", "pierce": 22, "dot": 12},
+        ("魔導金塊", "闇夜の結晶", "雷光の結晶"): {"name": "魔導金製 黒雷弾", "img": "images/bullet_gold_thunder_dark.png", "pierce": 20, "dot": 32},
+        ("魔導金塊", "月光の結晶", "涼風の結晶"): {"name": "魔導金製 幻風弾", "img": "images/bullet_gold_wind_moon.png", "pierce": 11, "dot": 14},
+        ("魔導金塊", "涼風の結晶", "闇夜の結晶"): {"name": "魔導金製 陰風弾", "img": "images/bullet_gold_wind_dark.png", "pierce": 14, "dot": 23},
+        ("魔導金塊", "月光の結晶", "闇夜の結晶"): {"name": "魔導金製 混沌弾", "img": "images/bullet_gold_moon_dark.png", "pierce": 24, "dot": 25},
+        # --- 魔導金塊の組み合わせ（同属性） ---
+        ("魔導金塊", "豪炎の結晶", "豪炎の結晶"): {"name": "魔導金製 爆炎弾", "img": "images/bullet_gold_fire_fire.png", "pierce": 9, "dot": 32},
+        ("魔導金塊", "蒼氷の結晶", "蒼氷の結晶"): {"name": "魔導金製 氷結弾", "img": "images/bullet_gold_ice_ice.png", "pierce": 16, "dot": 14},
+        ("魔導金塊", "雷光の結晶", "雷光の結晶"): {"name": "魔導金製 電磁弾", "img": "images/bullet_gold_thunder_thunder.png", "pierce": 14, "dot": 42},
+        ("魔導金塊", "涼風の結晶", "涼風の結晶"): {"name": "魔導金製 旋風弾", "img": "images/bullet_gold_wind_wind.png", "pierce": 6, "dot": 20},
+        ("魔導金塊", "月光の結晶", "月光の結晶"): {"name": "魔導金製 月光弾", "img": "images/bullet_gold_moon_moon.png", "pierce": 19, "dot": 24},
+        ("魔導金塊", "闇夜の結晶", "闇夜の結晶"): {"name": "魔導金製 影縫弾", "img": "images/bullet_gold_dark_dark.png", "pierce": 22, "dot": 50},
 
         # --- ミスリル塊の組み合わせ（異属性） ---
         ("ミスリル塊", "蒼氷の結晶", "豪炎の結晶"): {"name": "ミスリル製 蒸気爆弾", "img": "images/bullet_mithril_fire_ice.png", "pierce": 20, "dot": 15},
@@ -122,8 +145,7 @@ def get_bullet_info(metal, magic1, magic2):
         ("ミスリル塊", "闇夜の結晶", "雷光の結晶"): {"name": "ミスリル製 黒雷弾", "img": "images/bullet_mithril_thunder_dark.png", "pierce": 25, "dot": 40},
         ("ミスリル塊", "月光の結晶", "涼風の結晶"): {"name": "ミスリル製 幻風弾", "img": "images/bullet_mithril_wind_moon.png", "pierce": 15, "dot": 18},
         ("ミスリル塊", "涼風の結晶", "闇夜の結晶"): {"name": "ミスリル製 陰風弾", "img": "images/bullet_mithril_wind_dark.png", "pierce": 18, "dot": 28},
-        ("ミスリル塊", "月光の結晶", "闇夜の結晶"): {"name": "ミスリル製 混沌弾", "img": "images/bullet_mithril_moon_dark.jpg", "pierce": 30, "dot": 30},
-
+        ("ミスリル塊", "月光の結晶", "闇夜の結晶"): {"name": "ミスリル製 混沌弾", "img": "images/bullet_mithril_moon_dark.png", "pierce": 30, "dot": 30},
         # --- ミスリル塊の組み合わせ（同属性） ---
         ("ミスリル塊", "豪炎の結晶", "豪炎の結晶"): {"name": "ミスリル製 爆炎弾", "img": "images/bullet_mithril_fire_fire.png", "pierce": 12, "dot": 40},
         ("ミスリル塊", "蒼氷の結晶", "蒼氷の結晶"): {"name": "ミスリル製 氷結弾", "img": "images/bullet_mithril_ice_ice.png", "pierce": 20, "dot": 18},
@@ -131,6 +153,30 @@ def get_bullet_info(metal, magic1, magic2):
         ("ミスリル塊", "涼風の結晶", "涼風の結晶"): {"name": "ミスリル製 旋風弾", "img": "images/bullet_mithril_wind_wind.png", "pierce": 8, "dot": 25},
         ("ミスリル塊", "月光の結晶", "月光の結晶"): {"name": "ミスリル製 月光弾", "img": "images/bullet_mithril_moon_moon.png", "pierce": 24, "dot": 30},
         ("ミスリル塊", "闇夜の結晶", "闇夜の結晶"): {"name": "ミスリル製 影縫弾", "img": "images/bullet_mithril_dark_dark.png", "pierce": 28, "dot": 60},
+
+        # --- オリハルコン塊の組み合わせ（異属性） ---
+        ("オリハルコン塊", "蒼氷の結晶", "豪炎の結晶"): {"name": "オリハルコン製 蒸気爆弾", "img": "images/bullet_orichalcum_fire_ice.png", "pierce": 30, "dot": 22},
+        ("オリハルコン塊", "豪炎の結晶", "雷光の結晶"): {"name": "オリハルコン製 爆雷弾", "img": "images/bullet_orichalcum_fire_thunder.png", "pierce": 16, "dot": 45},
+        ("オリハルコン塊", "涼風の結晶", "豪炎の結晶"): {"name": "オリハルコン製 熱風弾", "img": "images/bullet_orichalcum_fire_wind.png", "pierce": 22, "dot": 30},
+        ("オリハルコン塊", "月光の結晶", "豪炎の結晶"): {"name": "オリハルコン製 陽炎弾", "img": "images/bullet_orichalcum_fire_moon.png", "pierce": 26, "dot": 34},
+        ("オリハルコン塊", "豪炎の結晶", "闇夜の結晶"): {"name": "オリハルコン製 冥火弾", "img": "images/bullet_orichalcum_fire_dark.png", "pierce": 32, "dot": 52},
+        ("オリハルコン塊", "蒼氷の結晶", "雷光の結晶"): {"name": "オリハルコン製 凍雷弾", "img": "images/bullet_orichalcum_ice_thunder.png", "pierce": 36, "dot": 18},
+        ("オリハルコン塊", "涼風の結晶", "蒼氷の結晶"): {"name": "オリハルコン製 吹雪弾", "img": "images/bullet_orichalcum_ice_wind.png", "pierce": 18, "dot": 18},
+        ("オリハルコン塊", "月光の結晶", "蒼氷の結晶"): {"name": "オリハルコン製 霊水弾", "img": "images/bullet_orichalcum_ice_moon.png", "pierce": 29, "dot": 24},
+        ("オリハルコン塊", "蒼氷の結晶", "闇夜の結晶"): {"name": "オリハルコン製 幽氷弾", "img": "images/bullet_orichalcum_ice_dark.png", "pierce": 35, "dot": 30},
+        ("オリハルコン塊", "涼風の結晶", "雷光の結晶"): {"name": "オリハルコン製 嵐弾", "img": "images/bullet_orichalcum_thunder_wind.png", "pierce": 12, "dot": 38},
+        ("オリハルコン塊", "月光の結晶", "雷光の結晶"): {"name": "オリハルコン製 閃光弾", "img": "images/bullet_orichalcum_thunder_moon.png", "pierce": 40, "dot": 22},
+        ("オリハルコン塊", "闇夜の結晶", "雷光の結晶"): {"name": "オリハルコン製 黒雷弾", "img": "images/bullet_orichalcum_thunder_dark.png", "pierce": 36, "dot": 60},
+        ("オリハルコン塊", "月光の結晶", "涼風の結晶"): {"name": "オリハルコン製 幻風弾", "img": "images/bullet_orichalcum_wind_moon.png", "pierce": 22, "dot": 27},
+        ("オリハルコン塊", "涼風の結晶", "闇夜の結晶"): {"name": "オリハルコン製 陰風弾", "img": "images/bullet_orichalcum_wind_dark.png", "pierce": 26, "dot": 42},
+        ("オリハルコン塊", "月光の結晶", "闇夜の結晶"): {"name": "オリハルコン製 混沌弾", "img": "images/bullet_orichalcum_moon_dark.png", "pierce": 44, "dot": 45},
+        # --- オリハルコン塊の組み合わせ（同属性） ---
+        ("オリハルコン塊", "豪炎の結晶", "豪炎の結晶"): {"name": "オリハルコン製 爆炎弾", "img": "images/bullet_orichalcum_fire_fire.png", "pierce": 18, "dot": 60},
+        ("オリハルコン塊", "蒼氷の結晶", "蒼氷の結晶"): {"name": "オリハルコン製 氷結弾", "img": "images/bullet_orichalcum_ice_ice.png", "pierce": 30, "dot": 28},
+        ("オリハルコン塊", "雷光の結晶", "雷光の結晶"): {"name": "オリハルコン製 電磁弾", "img": "images/bullet_orichalcum_thunder_thunder.png", "pierce": 26, "dot": 75},
+        ("オリハルコン塊", "涼風の結晶", "涼風の結晶"): {"name": "オリハルコン製 旋風弾", "img": "images/bullet_orichalcum_wind_wind.png", "pierce": 12, "dot": 38},
+        ("オリハルコン塊", "月光の結晶", "月光の結晶"): {"name": "オリハルコン製 月光弾", "img": "images/bullet_orichalcum_moon_moon.png", "pierce": 35, "dot": 45},
+        ("オリハルコン塊", "闇夜の結晶", "闇夜の結晶"): {"name": "オリハルコン製 影縫弾", "img": "images/bullet_orichalcum_dark_dark.png", "pierce": 40, "dot": 90},
     }
 
     key = (metal["name"], m1_name, m2_name)
@@ -152,14 +198,11 @@ def start_battle(selected_metal_idx, selected_magic_idx1, selected_magic_idx2):
 
     b_info = get_bullet_info(metal, magic1, magic2)
     
-    # 基本の威力計算
     base_damage_mult = magic1["mult"] * magic2["mult"]
     
-    # 同属性結晶が選択された場合、個数に応じたボーナス倍率を加算
-    # （例: 同じ名前の結晶であればボーナスとして倍率に +0.3 または 1.2倍）
     resonance_bonus = 0.0
     if magic1["name"] == magic2["name"]:
-        resonance_bonus = 0.4  # 同属性同盟ボーナス
+        resonance_bonus = 0.4
         b_info["name"] = f"共鳴・{b_info['name']}"
         b_info["pierce"] += 5
         b_info["dot"] += 5
@@ -198,13 +241,13 @@ if st.session_state.state in ["craft", "battle"]:
 # 1. スタート画面
 if st.session_state.state == "start":
     st.markdown("### 【ゲームルール & 戦略ヒント】")
-    st.markdown("* **合成フェーズ**: 銃弾ごとに**「貫通力」**や**「継続ダメージ」**の性能が異なります。")
-    st.markdown("* **共鳴ボーナス**: 同じ属性の結晶を2つ選んで合成すると、**共鳴効果**により威力が大幅にアップします！")
+    st.markdown("* **合成フェーズ**: 銃弾ごとに**「貫通力」**や**「継続ダメージ」**の性能が異なります[cite: 5]。")
+    st.markdown("* **共鳴ボーナス**: 同じ属性の結晶を2つ選んで合成すると、**共鳴効果**により威力が大幅にアップします[cite: 5]！")
     st.markdown("""* **敵の特性**: 
-  * 🗿 **高防御力**: 貫通力の高い弾が有効
-  * 🌳 **高回復力**: 毎ターンHPを削る「継続ダメージ」弾で相殺
-  * 🥷 **高回避率**: 確実に当てるための工夫が必要
-  * 🐗 **高攻撃力**: 短期決戦で素早く倒すべし！""")
+  * 🗿 **高防御力**: 貫通力の高い弾が有効[cite: 5]
+  * 🌳 **高回復力**: 毎ターンHPを削る「継続ダメージ」弾で相殺[cite: 5]
+  * 🥷 **高回避率**: 確実に当てるための工夫が必要[cite: 5]
+  * 🐗 **高攻撃力**: 短期決戦で素早く倒すべし[cite: 5]！""")
     if st.button("ゲームスタート", type="primary", use_container_width=True):
         start_game()
         st.rerun()
@@ -240,14 +283,12 @@ elif st.session_state.state == "craft":
             with col_txt:
                 st.write(f"[{i+1}] **{mg['name']}** (倍率: x{mg['mult']})")
 
-        # 同じ属性の結晶も含めて2つ選べるように独立したセレクトボックスを用意
         magic_choices = range(len(st.session_state.magics))
         magic_format = lambda x: f"[{x+1}] {st.session_state.magics[x]['name']} (x{st.session_state.magics[x]['mult']})"
         
         selected_magic_idx1 = st.selectbox("魔力素材 1つ目を選ぶ", magic_choices, format_func=magic_format, index=0)
         selected_magic_idx2 = st.selectbox("魔力素材 2つ目を選ぶ", magic_choices, format_func=magic_format, index=min(1, len(magic_choices)-1))
 
-    # プレビュー表示
     m_preview = st.session_state.metals[selected_metal_idx]
     mg1_preview = st.session_state.magics[selected_magic_idx1]
     mg2_preview = st.session_state.magics[selected_magic_idx2]
@@ -272,7 +313,7 @@ elif st.session_state.state == "craft":
         if mg1_preview["name"] == mg2_preview["name"]:
             st.success("✨ 【同属性共鳴ボーナス発動！】 威力・貫通力・継続ダメージが上昇します！")
         st.write(f"予測総威力: **{preview_damage}** （1発あたり約 {int(preview_damage/10)} × 10発）")
-        st.write(f"⚔️ **貫通力**: {preview_b_info['pierce'] if mg1_preview['name'] != mg2_preview['name'] else preview_b_info['pierce']} | 🔥 **継続ダメージ**: {preview_b_info['dot']}")
+        st.write(f"⚔️ **貫通力**: {preview_b_info['pierce']} | 🔥 **継続ダメージ**: {preview_b_info['dot']}")
 
     st.markdown("---")
     if st.button("銃弾を合成して戦闘へ！", type="primary", use_container_width=True):
@@ -283,7 +324,6 @@ elif st.session_state.state == "craft":
 elif st.session_state.state == "battle":
     st.subheader("⚔️ 戦闘フェーズ")
 
-    # 複数出現する敵の表示（st.imageを使用）
     st.markdown("#### 👾 襲い来る敵グループ（特性持ち）")
     enemy_cols = st.columns(len(st.session_state.enemies))
     for idx, enemy in enumerate(st.session_state.enemies):
@@ -306,7 +346,6 @@ elif st.session_state.state == "battle":
         max(0.0, min(1.0, st.session_state.enemy_hp / st.session_state.enemy_max_hp))
     )
 
-    # 装着中の銃弾情報を画像付きで表示
     col_b1, col_b2 = st.columns([1, 5])
     with col_b1:
         st.image(st.session_state.bullets["img"], width=150)
