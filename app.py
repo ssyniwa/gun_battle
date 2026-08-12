@@ -46,16 +46,16 @@ def start_game():
 
 def generate_materials():
     st.session_state.metals = [random.choice(METALS) for _ in range(3)]
+    # 4つの魔力素材をランダムドロップ（同じものが重複してドロップすることもある）
     st.session_state.magics = [random.choice(MAGICS) for _ in range(4)]
     st.session_state.bullets = None
 
 
-# --- 18通りの銃弾パターン（画像パスを指定） ---
+# --- 銃弾パターンとボーナス計算 ---
 def get_bullet_info(metal, magic1, magic2):
     sorted_magics = sorted([magic1["name"], magic2["name"]])
     m1_name, m2_name = sorted_magics[0], sorted_magics[1]
 
-    # 金属3種 × (6C2 = 15通りの魔力ペア) に対応するパターン定義
     bullet_patterns = {
         # --- 鉄塊の組み合わせ ---
         ("鉄塊", "蒼氷の結晶", "豪炎の結晶"): {"name": "鉄製 蒸気爆弾", "img": "images/bullet_iron_fire_ice.png", "pierce": 5, "dot": 8},
@@ -121,13 +121,26 @@ def get_bullet_info(metal, magic1, magic2):
     )
 
 
-def start_battle(selected_metal_idx, selected_magic_indices):
+def start_battle(selected_metal_idx, selected_magic_idx1, selected_magic_idx2):
     metal = st.session_state.metals[selected_metal_idx]
-    magic1 = st.session_state.magics[selected_magic_indices[0]]
-    magic2 = st.session_state.magics[selected_magic_indices[1]]
+    magic1 = st.session_state.magics[selected_magic_idx1]
+    magic2 = st.session_state.magics[selected_magic_idx2]
 
     b_info = get_bullet_info(metal, magic1, magic2)
-    single_damage = int(metal["power"] * magic1["mult"] * magic2["mult"])
+    
+    # 基本の威力計算
+    base_damage_mult = magic1["mult"] * magic2["mult"]
+    
+    # 同属性結晶が選択された場合、個数に応じたボーナス倍率を加算
+    # （例: 同じ名前の結晶であればボーナスとして倍率に +0.3 または 1.2倍）
+    resonance_bonus = 0.0
+    if magic1["name"] == magic2["name"]:
+        resonance_bonus = 0.4  # 同属性同盟ボーナス
+        b_info["name"] = f"共鳴・{b_info['name']}"
+        b_info["pierce"] += 5
+        b_info["dot"] += 5
+
+    single_damage = int(metal["power"] * (base_damage_mult + resonance_bonus))
 
     st.session_state.bullets = {
         "name": b_info["name"],
@@ -162,6 +175,7 @@ if st.session_state.state in ["craft", "battle"]:
 if st.session_state.state == "start":
     st.markdown("### 【ゲームルール & 戦略ヒント】")
     st.markdown("* **合成フェーズ**: 銃弾ごとに**「貫通力」**や**「継続ダメージ」**の性能が異なります。")
+    st.markdown("* **共鳴ボーナス**: 同じ属性の結晶を2つ選んで合成すると、**共鳴効果**により威力が大幅にアップします！")
     st.markdown("""* **敵の特性**: 
   * 🗿 **高防御力**: 貫通力の高い弾が有効
   * 🌳 **高回復力**: 毎ターンHPを削る「継続ダメージ」弾で相殺
@@ -174,7 +188,7 @@ if st.session_state.state == "start":
 # 2. 合成フェーズ
 elif st.session_state.state == "craft":
     st.subheader("🛠️ 合成フェーズ")
-    st.write("手に入れた素材から **金属素材 1つ** と **魔力素材 2つ** を選択してください。")
+    st.write("手に入れた素材から **金属素材 1つ** と **魔力素材 2つ** を選択してください。（同じ属性の結晶を選ぶと共鳴ボーナス！）")
 
     col1, col2 = st.columns(2)
 
@@ -183,7 +197,7 @@ elif st.session_state.state == "craft":
         for i, m in enumerate(st.session_state.metals):
             col_img, col_txt = st.columns([1, 4])
             with col_img:
-                st.image(m["img"], width=150)
+                st.image(m["img"], width=100)
             with col_txt:
                 st.write(f"**{m['name']}** (基礎攻撃力: {m['power']})")
         
@@ -194,50 +208,52 @@ elif st.session_state.state == "craft":
         )
 
     with col2:
-        st.markdown("#### 🔮 入手した魔力素材")
+        st.markdown("#### 🔮 入手した魔力素材（ドロップ）")
         for i, mg in enumerate(st.session_state.magics):
             col_img, col_txt = st.columns([1, 4])
             with col_img:
-                st.image(mg["img"], width=150)
+                st.image(mg["img"], width=100)
             with col_txt:
-                st.write(f"**{mg['name']}** (倍率: x{mg['mult']})")
+                st.write(f"[{i+1}] **{mg['name']}** (倍率: x{mg['mult']})")
 
-        selected_magic_indices = st.multiselect(
-            "魔力素材を選ぶ（ちょうど2つ）",
-            range(len(st.session_state.magics)),
-            format_func=lambda x: st.session_state.magics[x]["name"],
-            max_selections=2,
-        )
+        # 同じ属性の結晶も含めて2つ選べるように独立したセレクトボックスを用意
+        magic_choices = range(len(st.session_state.magics))
+        magic_format = lambda x: f"[{x+1}] {st.session_state.magics[x]['name']} (x{st.session_state.magics[x]['mult']})"
+        
+        selected_magic_idx1 = st.selectbox("魔力素材 1つ目を選ぶ", magic_choices, format_func=magic_format, index=0)
+        selected_magic_idx2 = st.selectbox("魔力素材 2つ目を選ぶ", magic_choices, format_func=magic_format, index=min(1, len(magic_choices)-1))
 
     # プレビュー表示
-    if len(selected_magic_indices) == 2:
-        m_preview = st.session_state.metals[selected_metal_idx]
-        mg1_preview = st.session_state.magics[selected_magic_indices[0]]
-        mg2_preview = st.session_state.magics[selected_magic_indices[1]]
+    m_preview = st.session_state.metals[selected_metal_idx]
+    mg1_preview = st.session_state.magics[selected_magic_idx1]
+    mg2_preview = st.session_state.magics[selected_magic_idx2]
 
-        preview_b_info = get_bullet_info(m_preview, mg1_preview, mg2_preview)
-        preview_damage = int(
-            m_preview["power"] * mg1_preview["mult"] * mg2_preview["mult"] * 10
-        )
+    preview_b_info = get_bullet_info(m_preview, mg1_preview, mg2_preview)
+    
+    preview_mult = mg1_preview["mult"] * mg2_preview["mult"]
+    if mg1_preview["name"] == mg2_preview["name"]:
+        preview_mult += 0.4
+        preview_b_info["name"] = f"共鳴・{preview_b_info['name']}"
 
-        st.markdown("---")
-        st.markdown("#### 🔍 合成プレビュー")
-        
-        col_p1, col_p2 = st.columns([1, 3])
-        with col_p1:
-            st.image(preview_b_info["img"], width=200)
-        with col_p2:
-            st.markdown(f"### **{preview_b_info['name']}**")
-            st.write(f"予測総威力: **{preview_damage}** （1発あたり約 {int(preview_damage/10)} × 10発）")
-            st.write(f"⚔️ **貫通力**: {preview_b_info['pierce']} | 🔥 **継続ダメージ**: {preview_b_info['dot']}")
+    preview_damage = int(m_preview["power"] * preview_mult * 10)
 
     st.markdown("---")
-    if len(selected_magic_indices) == 2:
-        if st.button("銃弾を合成して戦闘へ！", type="primary", use_container_width=True):
-            start_battle(selected_metal_idx, selected_magic_indices)
-            st.rerun()
-    else:
-        st.warning("⚠️ 魔力素材を**ちょうど2つ**選択してください。")
+    st.markdown("#### 🔍 合成プレビュー")
+    
+    col_p1, col_p2 = st.columns([1, 3])
+    with col_p1:
+        st.image(preview_b_info["img"], width=150)
+    with col_p2:
+        st.markdown(f"### **{preview_b_info['name']}**")
+        if mg1_preview["name"] == mg2_preview["name"]:
+            st.success("✨ 【同属性共鳴ボーナス発動！】 威力・貫通力・継続ダメージが上昇します！")
+        st.write(f"予測総威力: **{preview_damage}** （1発あたり約 {int(preview_damage/10)} × 10発）")
+        st.write(f"⚔️ **貫通力**: {preview_b_info['pierce'] if mg1_preview['name'] != mg2_preview['name'] else preview_b_info['pierce']} | 🔥 **継続ダメージ**: {preview_b_info['dot']}")
+
+    st.markdown("---")
+    if st.button("銃弾を合成して戦闘へ！", type="primary", use_container_width=True):
+        start_battle(selected_metal_idx, selected_magic_idx1, selected_magic_idx2)
+        st.rerun()
 
 # 3. 戦闘フェーズ
 elif st.session_state.state == "battle":
@@ -248,7 +264,7 @@ elif st.session_state.state == "battle":
     enemy_cols = st.columns(len(st.session_state.enemies))
     for idx, enemy in enumerate(st.session_state.enemies):
         with enemy_cols[idx]:
-            st.image(enemy["img"], width=150)
+            st.image(enemy["img"], width=120)
             st.markdown(f"<div style='text-align: center;'><b>{enemy['name']}</b></div>", unsafe_allow_html=True)
             st.markdown(f"<div style='text-align: center; font-size: 0.8rem; color: gray;'>ATK:{enemy['atk']} / DEF:{enemy['def']} / 回復:{enemy['heal']}</div>", unsafe_allow_html=True)
 
@@ -269,7 +285,7 @@ elif st.session_state.state == "battle":
     # 装着中の銃弾情報を画像付きで表示
     col_b1, col_b2 = st.columns([1, 5])
     with col_b1:
-        st.image(st.session_state.bullets["img"], width=200)
+        st.image(st.session_state.bullets["img"], width=150)
     with col_b2:
         st.info(
             f"🎯 装着中の銃弾: **{st.session_state.bullets['name']}** "
