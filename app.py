@@ -26,6 +26,60 @@ ENEMY_TYPES = [
     {"name": "ゴーレム (高防御力)", "img": "images/enemy_golem.png", "trait": "defense", "atk": 10, "def": 15, "heal": 0, "evade": 0.0},
     {"name": "トレント (高回復力)", "img": "images/enemy_treant.png", "trait": "heal", "atk": 10, "def": 5, "heal": 15, "evade": 0.05},
     {"name": "ニンジャ (高回避率)", "img": "images/enemy_ninja.png", "trait": "evade", "atk": 15, "def": 2, "heal": 0, "evade": 0.35},
+    {
+        "name": "スライム (超高回避)",
+        "img": "images/enemy_slime.png",
+        "trait": "evade",
+        "atk": 5,
+        "def": 1,
+        "heal": 0,
+        "evade": 0.50,
+    },
+    {
+        "name": "ドラゴン (強敵・全方位)",
+        "img": "images/enemy_dragon.png",
+        "trait": "boss",
+        "atk": 35,
+        "def": 20,
+        "heal": 5,
+        "evade": 0.10,
+    },
+    {
+        "name": "スケルトン (バランス型)",
+        "img": "images/enemy_skeleton.png",
+        "trait": "balance",
+        "atk": 15,
+        "def": 10,
+        "heal": 0,
+        "evade": 0.10,
+    },
+    {
+        "name": "フェニックス (超・高回復力)",
+        "img": "images/enemy_phoenix.png",
+        "trait": "heal",
+        "atk": 20,
+        "def": 8,
+        "heal": 30,
+        "evade": 0.15,
+    },
+    {
+        "name": "アイアンナイト (鉄壁の要塞)",
+        "img": "images/enemy_knight.png",
+        "trait": "defense",
+        "atk": 12,
+        "def": 28,
+        "heal": 0,
+        "evade": 0.02,
+    },
+    {
+        "name": "アサシン (超・高攻撃＆回避)",
+        "img": "images/enemy_assassin.png",
+        "trait": "attack",
+        "atk": 42,
+        "def": 3,
+        "heal": 0,
+        "evade": 0.30,
+    },
 ]
 
 # --- セッションステートの初期化 ---
@@ -247,7 +301,8 @@ if st.session_state.state == "start":
   * 🗿 **高防御力**: 貫通力の高い弾が有効[cite: 5]
   * 🌳 **高回復力**: 毎ターンHPを削る「継続ダメージ」弾で相殺[cite: 5]
   * 🥷 **高回避率**: 確実に当てるための工夫が必要[cite: 5]
-  * 🐗 **高攻撃力**: 短期決戦で素早く倒すべし[cite: 5]！""")
+  * 🐗 **高攻撃力**: 短期決戦で素早く倒すべし[cite: 5]！
+  * 🐉 **強敵・全方位**: あらゆるステータスが高い難敵""")
     if st.button("ゲームスタート", type="primary", use_container_width=True):
         start_game()
         st.rerun()
