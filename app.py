@@ -319,7 +319,7 @@ elif st.session_state.state == "craft":
         for i, m in enumerate(st.session_state.metals):
             col_img, col_txt = st.columns([1, 4])
             with col_img:
-                st.image(m["img"], width=100)
+                st.image(m["img"], width=200)
             with col_txt:
                 st.write(f"**{m['name']}** (基礎攻撃力: {m['power']})")
         
@@ -334,7 +334,7 @@ elif st.session_state.state == "craft":
         for i, mg in enumerate(st.session_state.magics):
             col_img, col_txt = st.columns([1, 4])
             with col_img:
-                st.image(mg["img"], width=100)
+                st.image(mg["img"], width=200)
             with col_txt:
                 st.write(f"[{i+1}] **{mg['name']}** (倍率: x{mg['mult']})")
 
@@ -362,7 +362,7 @@ elif st.session_state.state == "craft":
     
     col_p1, col_p2 = st.columns([1, 3])
     with col_p1:
-        st.image(preview_b_info["img"], width=150)
+        st.image(preview_b_info["img"], width=200)
     with col_p2:
         st.markdown(f"### **{preview_b_info['name']}**")
         if mg1_preview["name"] == mg2_preview["name"]:
@@ -383,7 +383,7 @@ elif st.session_state.state == "battle":
     enemy_cols = st.columns(len(st.session_state.enemies))
     for idx, enemy in enumerate(st.session_state.enemies):
         with enemy_cols[idx]:
-            st.image(enemy["img"], width=120)
+            st.image(enemy["img"], width=200)
             st.markdown(f"<div style='text-align: center;'><b>{enemy['name']}</b></div>", unsafe_allow_html=True)
             st.markdown(f"<div style='text-align: center; font-size: 0.8rem; color: gray;'>ATK:{enemy['atk']} / DEF:{enemy['def']} / 回復:{enemy['heal']}</div>", unsafe_allow_html=True)
 
@@ -403,7 +403,7 @@ elif st.session_state.state == "battle":
 
     col_b1, col_b2 = st.columns([1, 5])
     with col_b1:
-        st.image(st.session_state.bullets["img"], width=150)
+        st.image(st.session_state.bullets["img"], width=200)
     with col_b2:
         st.info(
             f"🎯 装着中の銃弾: **{st.session_state.bullets['name']}** "
