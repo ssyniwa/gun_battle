@@ -101,8 +101,21 @@ def start_game():
 
 
 def generate_materials():
-    st.session_state.metals = [random.choice(METALS) for _ in range(3)]
-    st.session_state.magics = [random.choice(MAGICS) for _ in range(4)]
+    # 1. 金属素材の抽選（オリハルコン塊の確率を低めに設定）
+    # 順番: 鉄塊, 鋼鉄塊, 魔導金塊, ミスリル塊, オリハルコン塊
+    metal_weights = [35, 25, 20, 15, 5]
+    st.session_state.metals = [random.choices(METALS, weights=metal_weights, k=1)[0] for _ in range(3)]
+
+    # 2. 魔力素材の抽選（同じ属性が重複する確率を低めに設定）
+    magics = []
+    for _ in range(4):
+        chosen = random.choice(MAGICS)
+        # すでに選ばれている属性と同じ場合、70%の確率で引き直して重複を避ける
+        while any(m["name"] == chosen["name"] for m in magics) and random.random() < 0.7:
+            chosen = random.choice(MAGICS)
+        magics.append(chosen)
+    
+    st.session_state.magics = magics
     st.session_state.bullets = None
 
 
