@@ -212,7 +212,7 @@ def get_bullet_info(metal, magic1, magic2):
         ("ミスリル塊", "闇夜の結晶", "雷光の結晶"): {"name": "ミスリル製 黒雷弾", "img": "images/bullet_mithril_thunder_dark.png", "pierce": 25, "dot": 40},
         ("ミスリル塊", "月光の結晶", "涼風の結晶"): {"name": "ミスリル製 幻風弾", "img": "images/bullet_mithril_wind_moon.png", "pierce": 15, "dot": 18},
         ("ミスリル塊", "涼風の結晶", "闇夜の結晶"): {"name": "ミスリル製 陰風弾", "img": "images/bullet_mithril_wind_dark.png", "pierce": 18, "dot": 28},
-        ("ミスリル塊", "月光の結晶", "闇夜の結晶"): {"name": "ミスリル製 混沌弾", "img": "images/bullet_mithril_moon_dark.png", "pierce": 30, "dot": 30},
+        ("ミスリル塊", "月光の結晶", "闇夜の結晶"): {"name": "ミスリル製 混沌弾", "img": "images/bullet_mithril_moon_dark.jpg", "pierce": 30, "dot": 30},
         # --- ミスリル塊の組み合わせ（同属性） ---
         ("ミスリル塊", "豪炎の結晶", "豪炎の結晶"): {"name": "ミスリル製 爆炎弾", "img": "images/bullet_mithril_fire_fire.png", "pierce": 12, "dot": 40},
         ("ミスリル塊", "蒼氷の結晶", "蒼氷の結晶"): {"name": "ミスリル製 氷結弾", "img": "images/bullet_mithril_ice_ice.png", "pierce": 20, "dot": 18},
